@@ -13,7 +13,7 @@ This application provides a user-friendly interface where users can adjust chemi
 ## 📁 Project Structure
 Based on the project directory:
 ```
-WINE-QUALITY-APP/
+Wine-Quality-WebApp/
 ├── datasets/           # Raw data (WineQT.csv)
 ├── model/              # Serialized Random Forest model (model.pkl)
 ├── researchs/          # Jupyter notebooks for EDA and Model Training
@@ -29,8 +29,8 @@ WINE-QUALITY-APP/
 
 1. Clone the repository
 ```
-git clone https://github.com/your-username/wine-quality-app.git
-cd wine-quality-app
+git clone https://github.com/vijayaideveloper/Wine-Quality-WebApp.git
+cd Wine-Quality-WebApp
 ```
 2. Create a Virtual Environment
 Windows:
