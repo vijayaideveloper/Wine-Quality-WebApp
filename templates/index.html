@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>VinSense — Wine Quality Predictor</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+</head>
+<body>
+
+  <!-- Background decoration -->
+  <div class="bg-decor">
+    <div class="bg-circle c1"></div>
+    <div class="bg-circle c2"></div>
+    <div class="bg-circle c3"></div>
+  </div>
+
+  <div class="layout">
+
+    <!-- ── HEADER ── -->
+    <header class="site-header">
+      <div class="logo">
+        <span class="logo-icon">&#9672;</span>
+        <span class="logo-text">QSence</span>
+      </div>
+      <p class="tagline">AI-Powered Wine Quality Predictor &nbsp;·&nbsp; Random Forest Model &nbsp;·&nbsp; 81.2% Accuracy</p>
+    </header>
+
+    <div class="main-grid">
+
+      <!-- ── LEFT: INPUT FORM ── -->
+      <section class="card inputs-card">
+        <div class="card-header">
+          <h2>Wine Parameters</h2>
+          <button class="btn-reset" id="resetBtn" title="Reset to average values">&#8635; Reset</button>
+        </div>
+        <p class="card-sub">Adjust the sliders to match your wine's chemical profile.</p>
+
+        <form id="wineForm">
+          {% for feat in features %}
+          {% set m = meta[feat] %}
+          <div class="field" data-feat="{{ feat }}">
+            <div class="field-header">
+              <label class="field-label">{{ feat | title }}</label>
+              <div class="field-right">
+                <input
+                  type="number"
+                  class="num-input"
+                  id="num_{{ loop.index }}"
+                  name="{{ feat }}"
+                  value="{{ m[3] }}"
+                  min="{{ m[0] }}"
+                  max="{{ m[1] }}"
+                  step="{{ m[2] }}"
+                />
+                <span class="unit">{{ m[4] }}</span>
+              </div>
+            </div>
+            <input
+              type="range"
+              class="slider"
+              id="sl_{{ loop.index }}"
+              min="{{ m[0] }}"
+              max="{{ m[1] }}"
+              step="{{ m[2] }}"
+              value="{{ m[3] }}"
+              data-num="num_{{ loop.index }}"
+            />
+            <p class="field-desc">{{ m[5] }}</p>
+          </div>
+          {% endfor %}
+
+          <button type="submit" class="btn-predict" id="predictBtn">
+            <span class="btn-label">Analyse Wine</span>
+            <span class="btn-arrow">&#8594;</span>
+          </button>
+        </form>
+      </section>
+
+      <!-- ── RIGHT: RESULTS ── -->
+      <section class="results-area">
+
+        <!-- Idle state -->
+        <div class="idle-card" id="idleCard">
+          <div class="idle-icon">&#9670;</div>
+          <h3>Awaiting Analysis</h3>
+          <p>Fill in the wine parameters on the left and click <em>Analyse Wine</em> to get a quality prediction.</p>
+        </div>
+
+        <!-- Result card (hidden until prediction) -->
+        <div class="result-card hidden" id="resultCard">
+          <div class="result-badge" id="resultBadge">
+            <span class="badge-icon" id="badgeIcon"></span>
+            <span class="badge-label" id="badgeLabel"></span>
+          </div>
+
+          <div class="confidence-block">
+            <p class="conf-title">Prediction confidence</p>
+            <div class="conf-bar-wrap">
+              <div class="conf-bar" id="confBar"></div>
+            </div>
+            <p class="conf-val" id="confVal"></p>
+          </div>
+
+          <div class="prob-row">
+            <div class="prob-item bad">
+              <span class="prob-pct" id="probBad">—</span>
+              <span class="prob-label">Low Quality</span>
+            </div>
+            <div class="prob-divider"></div>
+            <div class="prob-item good">
+              <span class="prob-pct" id="probGood">—</span>
+              <span class="prob-label">High Quality</span>
+            </div>
+          </div>
+
+          <div class="top-features" id="topFeatures">
+            <p class="tf-title">Top influencing features</p>
+            <div id="tfList"></div>
+          </div>
+        </div>
+
+        <!-- Model info card -->
+        <div class="info-card">
+          <h4>About the Model</h4>
+          <div class="info-grid">
+            <div class="info-item">
+              <span class="info-label">Algorithm</span>
+              <span class="info-val">Random Forest</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Trees</span>
+              <span class="info-val">200</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Test Accuracy</span>
+              <span class="info-val">81.2%</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Training Samples</span>
+              <span class="info-val">914</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Features</span>
+              <span class="info-val">11</span>
+            </div>
+            <div class="info-item">
+              <span class="info-label">Classes</span>
+              <span class="info-val">Low (3-5) / High (6-8)</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Feature importance reference -->
+        <div class="imp-card">
+          <h4>Feature Importance Reference</h4>
+          <div class="imp-list">
+            <div class="imp-row"><span class="imp-name">Alcohol</span><div class="imp-bar-wrap"><div class="imp-bar" style="width:100%"></div></div><span class="imp-pct">~23%</span></div>
+            <div class="imp-row"><span class="imp-name">Volatile Acidity</span><div class="imp-bar-wrap"><div class="imp-bar" style="width:78%"></div></div><span class="imp-pct">~18%</span></div>
+            <div class="imp-row"><span class="imp-name">Sulphates</span><div class="imp-bar-wrap"><div class="imp-bar" style="width:60%"></div></div><span class="imp-pct">~14%</span></div>
+            <div class="imp-row"><span class="imp-name">Total SO₂</span><div class="imp-bar-wrap"><div class="imp-bar" style="width:47%"></div></div><span class="imp-pct">~11%</span></div>
+            <div class="imp-row"><span class="imp-name">Citric Acid</span><div class="imp-bar-wrap"><div class="imp-bar" style="width:40%"></div></div><span class="imp-pct">~9%</span></div>
+          </div>
+        </div>
+
+      </section>
+    </div>
+
+    <footer class="site-footer">
+      Built with Flask &amp; Scikit-learn &nbsp;·&nbsp; Dataset: WineQT (1143 samples) &nbsp;·&nbsp; VinSense © 2024
+    </footer>
+
+  </div>
+
+  <script src="{{ url_for('static', filename='main.js') }}"></script>
+</body>
+</html>

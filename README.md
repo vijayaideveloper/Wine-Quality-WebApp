@@ -50,7 +50,7 @@ pip install -r requirements.txt
 4. Run the Application
 
 ```
-python app.py
+python app.py or python3 app.py
 ```
 Visit http://127.0.0.1:5000 in your browser.
 
